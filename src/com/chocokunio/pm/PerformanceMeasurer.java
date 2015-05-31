@@ -2,6 +2,8 @@ package com.chocokunio.pm;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * 処理速度測定ライブラリ
@@ -19,6 +21,21 @@ public class PerformanceMeasurer {
 
     /** 時間の出力 */
     public static final int CONSOLE = 1;
+    
+    /** 記録タイトル　*/
+    private static final String RECORD_TITLE_TPL = "[計測結果 : %s, 計測開始時間(%s) : %d]";
+
+    /** 記録タイトル行 */
+    private static final String RECORD_HEAD_LINE = "ID\t計測箇所\t時間\t\t経過時間";
+
+    /** 記録表示行 */
+    private static final String RECORD_LINE_TPL = "%s\t%s\t%d\t\t%d";
+    
+    private static final String UNIT_MSEC_STR = "msec";
+
+    private static final String UNIT_NSEC_STR = "nsec";
+    
+    private String unitName = UNIT_MSEC_STR;
 
     /** 計測ID */
     private String mid;
@@ -33,7 +50,7 @@ public class PerformanceMeasurer {
     private long endTime = 0;
 
     /** 途中計測時刻 */
-    private ArrayList<Long> splits = new ArrayList<Long>();
+    private Map<String, Long> splits = new LinkedHashMap<String, Long>();
 
     /** 記録格納マップ */
     private ArrayList<Record> records = new ArrayList<Record>();
@@ -75,43 +92,65 @@ public class PerformanceMeasurer {
 
     /**
      * 途中経過時刻を記録する
-     * 
      */
     public void split() {
         final long now = getNowTime();
-        splits.add(now);
+        splits.put("", now);
     }
 
     /**
-     * 計測時刻リストを取得する
+     * 途中経過時刻を記録する
      * 
-     * @return
+     * @param place 計測箇所
+     * 
      */
-    public ArrayList<Long> getSplits() {
+    public void split(String place) {
+        final long now = getNowTime();
+        if (place == null || place.isEmpty()) {
+        	splits.put("", now);
+        } else {
+        	splits.put(place, now);
+        }
+    }
+
+    /**
+     * 計測時刻リスト取得.
+     * 
+     * @return 計測時刻リスト
+     */
+    public Map<String, Long> getSplits() {
         return splits;
     }
 
     /**
-     * 計測終了
+     * 計測終了.
      */
     public void stop() {
         long t = getNowTime();
         endTime = t;
-        splits.add(t);
+        splits.put("end", t);
+        createRecord();
+    }
+
+    /**
+     * 計測結果リスト取得.
+     * @return
+     */
+    public ArrayList<Record> getRecord() {
+    	return records;
     }
 
     /**
      * 計測時間出力
      */
     public void showRecord() {
-        createRecord();
-        System.out.println(String.format("\n[計測結果 : %s, 計測開始時間 : %d]", mid,
-                startTime));
-        System.out.println("ID\t時間\t\t経過時間\t\t差分");
+        System.out.println(String.format(RECORD_TITLE_TPL, mid,
+        		unitName, startTime));
+        System.out.println(RECORD_HEAD_LINE);
         for (int i = 0; i < records.size(); i++) {
             Record r = records.get(i);
-            System.out.println(String.format("%s\t%d\t\t%d", r.getId(),
-                    r.getClock(), r.getTime()));
+            System.out.println(String.format(RECORD_LINE_TPL, r.getId(),
+                    r.getPlace(), r.getClock(), r.getTime()));
         }
     }
 
@@ -119,7 +158,7 @@ public class PerformanceMeasurer {
      * 計測時間をCSV形式で取得する。
      */
     public void outputCSV(File file) {
-
+    	// out csv.
     }
 
     /**
@@ -152,10 +191,12 @@ public class PerformanceMeasurer {
         switch (measurUnit) {
         case UNIT_NANOSEC:
             result = System.nanoTime();
+            unitName = UNIT_NSEC_STR;
             break;
         case UNIT_MSEC:
         default:
             result = System.currentTimeMillis();
+            unitName = UNIT_MSEC_STR;
             break;
         }
 
@@ -166,15 +207,19 @@ public class PerformanceMeasurer {
      * 計測時間の記録を計算する。
      */
     private void createRecord() {
-        for (int i = 0; i < splits.size(); i++) {
-            long split = splits.get(i);
+    	int i = 0;
+    	for(Map.Entry<String, Long> e : splits.entrySet()) {
+            long split = e.getValue();
             long t = split - startTime;
-            Record r = new Record();
 
+            Record r = new Record();
             r.setId(String.valueOf(i + 1));
+            r.setPlace(e.getKey());
             r.setClock(split);
             r.setTime(t);
             records.add(r);
-        }
+
+            i++;
+    	}
     }
 }

@@ -10,13 +10,16 @@ public class Record {
 
     /** ID */
     private String id;
+    
+    /** 計測場所 */
+    private String place;
 
-    /** 時刻 */
+	/** 時刻 */
     private long clock;
 
     /** 経過時間 */
     private long time;
-
+    
     /**
      * コンストラクタ
      */
@@ -37,6 +40,20 @@ public class Record {
     public void setId(String id) {
         this.id = id;
     }
+
+    /**
+	 * @return place
+	 */
+	public String getPlace() {
+		return place;
+	}
+
+	/**
+	 * @param place セットする place
+	 */
+	public void setPlace(String place) {
+		this.place = place;
+	}
 
     /**
      * @return clock
@@ -67,5 +84,4 @@ public class Record {
     public void setTime(long time) {
         this.time = time;
     }
-
 }
