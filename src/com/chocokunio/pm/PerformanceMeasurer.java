@@ -3,11 +3,12 @@ package com.chocokunio.pm;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * 処理速度測定ライブラリ
- * 
+ *
  * @author kunio
  *
  */
@@ -21,7 +22,7 @@ public class PerformanceMeasurer {
 
     /** 時間の出力 */
     public static final int CONSOLE = 1;
-    
+
     /** 記録タイトル　*/
     private static final String RECORD_TITLE_TPL = "[計測結果 : %s, 計測開始時間(%s) : %d]";
 
@@ -30,11 +31,11 @@ public class PerformanceMeasurer {
 
     /** 記録表示行 */
     private static final String RECORD_LINE_TPL = "%s\t%s\t%d\t\t%d";
-    
+
     private static final String UNIT_MSEC_STR = "msec";
 
     private static final String UNIT_NSEC_STR = "nsec";
-    
+
     private String unitName = UNIT_MSEC_STR;
 
     /** 計測ID */
@@ -53,11 +54,11 @@ public class PerformanceMeasurer {
     private Map<String, Long> splits = new LinkedHashMap<String, Long>();
 
     /** 記録格納マップ */
-    private ArrayList<Record> records = new ArrayList<Record>();
+    private List<Record> records = new ArrayList<Record>();
 
     /**
      * コンストラクタ
-     * 
+     *
      * @param unit
      *            計測単位
      */
@@ -68,12 +69,28 @@ public class PerformanceMeasurer {
 
     /**
      * コンストラクタ
-     * 
+     *
      * @param unit
      *            計測単位
      */
     public PerformanceMeasurer(String id) {
         mid = id;
+    }
+
+    /**
+     * 計測ID取得
+     * @return 計測ID
+     */
+    public String getMid() {
+        return this.mid;
+    }
+
+    /**
+     * 計測単位取得
+     * @return 計測単位
+     */
+    public int getMeasurUnit() {
+        return this.measurUnit;
     }
 
     /**
@@ -84,25 +101,24 @@ public class PerformanceMeasurer {
     }
 
     /**
-     * 計測開始
+     * 計測開始時刻取得
      */
     public long getStartTime() {
         return startTime;
     }
 
     /**
-     * 途中経過時刻を記録する
+     * 計測停止時刻取得
      */
-    public void split() {
-        final long now = getNowTime();
-        splits.put("", now);
+    public long getEndTime() {
+        return endTime;
     }
 
     /**
      * 途中経過時刻を記録する
-     * 
+     *
      * @param place 計測箇所
-     * 
+     *
      */
     public void split(String place) {
         final long now = getNowTime();
@@ -115,7 +131,7 @@ public class PerformanceMeasurer {
 
     /**
      * 計測時刻リスト取得.
-     * 
+     *
      * @return 計測時刻リスト
      */
     public Map<String, Long> getSplits() {
@@ -126,9 +142,8 @@ public class PerformanceMeasurer {
      * 計測終了.
      */
     public void stop() {
-        long t = getNowTime();
-        endTime = t;
-        splits.put("end", t);
+        endTime = getNowTime();
+        splits.put("end", endTime);
         createRecord();
     }
 
@@ -136,7 +151,7 @@ public class PerformanceMeasurer {
      * 計測結果リスト取得.
      * @return
      */
-    public ArrayList<Record> getRecord() {
+    public List<Record> getRecord() {
     	return records;
     }
 
@@ -163,7 +178,7 @@ public class PerformanceMeasurer {
 
     /**
      * 途中経過時間取得
-     * 
+     *
      * @return 途中経過時間
      */
     public long getElapsedTime() {
@@ -172,7 +187,7 @@ public class PerformanceMeasurer {
 
     /**
      * 経過時間計算
-     * 
+     *
      * @return 経過時間
      */
     private long calcElapsedTime() {
@@ -182,7 +197,7 @@ public class PerformanceMeasurer {
 
     /**
      * 現在時刻取得
-     * 
+     *
      * @return
      */
     private long getNowTime() {
